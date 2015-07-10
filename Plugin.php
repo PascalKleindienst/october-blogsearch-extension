@@ -11,7 +11,7 @@ class Plugin extends PluginBase
     /**
      * @var array Plugin dependencies
      */
-    public $require = ['RainLab.Blog'];
+    public $require = [ 'RainLab.Blog' ];
 
     /**
      * Returns information about this plugin.
@@ -45,16 +45,16 @@ class Plugin extends PluginBase
     public function registerMarkupTags()
     {
         // add placebo filter if Translate Plugin does not exists, so things don't break
-        if(!PluginManager::instance()->exists('Rainlab.Translate')) {
+        if (!PluginManager::instance()->exists('Rainlab.Translate')) {
             return [
                 'filters' => [
-                    '_'  => [$this, 'placeboFilter'],
-                    '__' => [$this, 'placeboFilter']
+                    '_'  => [ $this, 'placeboFilter' ],
+                    '__' => [ $this, 'placeboFilter' ]
                 ]
             ];
         }
 
-        return [];
+        return [ ];
     }
 
     /**
@@ -64,7 +64,7 @@ class Plugin extends PluginBase
      * @param array $params
      * @return mixed
      */
-    public function placeboFilter ($str, $count = 0, $params = [])
+    public function placeboFilter($str, $count = 0, $params = [ ])
     {
         return $str;
     }
