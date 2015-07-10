@@ -1,6 +1,6 @@
 {% set posts = __SELF__.posts %}
 
-<h2>{{ 'Search Results for: ' ~ __SELF__.searchParam|_ }}</h2>
+<h2>Search Results for: {{ __SELF__.searchParam }}</h2>
 
 <ul class="post-list">
     {% for post in posts %}
