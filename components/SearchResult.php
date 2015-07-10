@@ -160,7 +160,7 @@ class SearchResult extends ComponentBase
         $this->prepareVars();
 
         // load posts
-        $this->posts = $this->page['posts'] = $this->listPosts();
+        $this->posts = $this->page[ 'posts' ] = $this->listPosts();
 
         /*
          * If the page number is not valid, redirect
@@ -169,7 +169,7 @@ class SearchResult extends ComponentBase
             $currentPage = $this->property('pageNumber');
 
             if ($currentPage > ($lastPage = $this->posts->lastPage()) && $currentPage > 1)
-                return Redirect::to($this->currentPageUrl([$pageNumberParam => $lastPage]));
+                return Redirect::to($this->currentPageUrl([ $pageNumberParam => $lastPage ]));
         }
     }
 
@@ -178,15 +178,15 @@ class SearchResult extends ComponentBase
      */
     protected function prepareVars()
     {
-        $this->pageParam = $this->page['pageParam'] = $this->paramName('pageNumber');
-        $this->searchParam = $this->page['searchParam'] = Input::get('search');
-        $this->noPostsMessage = $this->page['noPostsMessage'] = $this->property('noPostsMessage');
+        $this->pageParam = $this->page[ 'pageParam' ] = $this->paramName('pageNumber');
+        $this->searchParam = $this->page[ 'searchParam' ] = Input::get('search');
+        $this->noPostsMessage = $this->page[ 'noPostsMessage' ] = $this->property('noPostsMessage');
 
         /*
          * Page links
          */
-        $this->postPage = $this->page['postPage'] = $this->property('postPage');
-        $this->categoryPage = $this->page['categoryPage'] = $this->property('categoryPage');
+        $this->postPage = $this->page[ 'postPage' ] = $this->property('postPage');
+        $this->categoryPage = $this->page[ 'categoryPage' ] = $this->property('categoryPage');
     }
 
     /**
@@ -210,10 +210,10 @@ class SearchResult extends ComponentBase
         /*
          * Add a "url" helper attribute for linking to each post and category
          */
-        $posts->each(function($post){
+        $posts->each(function($post) {
             $post->setUrl($this->postPage, $this->controller);
 
-            $post->categories->each(function($category){
+            $post->categories->each(function($category) {
                 $category->setUrl($this->categoryPage, $this->controller);
             });
         });

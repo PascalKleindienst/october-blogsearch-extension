@@ -52,6 +52,6 @@ class SearchForm extends ComponentBase
      */
     public function onRun()
     {
-        $this->resultPage = $this->page['resultPage'] = $this->property('resultPage');
+        $this->resultPage = $this->page[ 'resultPage' ] = $this->property('resultPage');
     }
 }
