@@ -128,10 +128,10 @@ class SearchResult extends ComponentBase
     }
 
     /**
-     * @see RainLab\Blog\Components\Posts::getCategoryPageOptions()
+     * @see RainLab\Blog\Components\Posts::getPostPageOptions()
      * @return mixed
      */
-    public function getCategoryPageOptions()
+    public function getPostPageOptions()
     {
         return Page::sortBy('baseFileName')->lists('baseFileName', 'baseFileName');
     }
