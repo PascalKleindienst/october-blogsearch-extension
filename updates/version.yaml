@@ -5,3 +5,4 @@
   - Replaced POST Method with GET
   - Map GET Request to :search url param
   - fixed broken navigation
+1.0.5: fixed wrong routing
