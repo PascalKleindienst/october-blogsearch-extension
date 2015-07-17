@@ -160,8 +160,8 @@ class SearchResult extends ComponentBase
         $this->prepareVars();
 
         // map get request to :search param
-        if (!\Request::isMethod('get')) {
-            $searchTerm = \Input::get('search');
+        $searchTerm = \Input::get('search');
+        if (\Request::isMethod('get') && $searchTerm) {
             return Redirect::to($this->currentPageUrl([ $this->searchParam => urlencode($searchTerm)]));
         }
 
