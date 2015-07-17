@@ -22,6 +22,12 @@ class SearchResult extends ComponentBase
     public $searchParam;
 
     /**
+     * The search term
+     * @var string
+     */
+    public $searchTerm;
+
+    /**
      * A collection of posts to display
      * @var Collection
      */
@@ -69,12 +75,12 @@ class SearchResult extends ComponentBase
     public function defineProperties()
     {
         return [
-//            'search' => [
-//                'title'       => 'Search Param',
-//                'description' => '',
-//                'type'        => 'string',
-//                'default'     => '{{ :search }}',
-//            ],
+            'searchTerm' => [
+                'title'       => 'Search Term',
+                'description' => 'The value to determine what the user is searching for.',
+                'type'        => 'string',
+                'default'     => '{{ :search }}',
+            ],
             'pageNumber' => [
                 'title'       => 'rainlab.blog::lang.settings.posts_pagination',
                 'description' => 'rainlab.blog::lang.settings.posts_pagination_description',
@@ -151,13 +157,13 @@ class SearchResult extends ComponentBase
      */
     public function onRun()
     {
-        // only available via post request, else send 404
-        if (!\Request::isMethod('post')) {
-            $this->setStatusCode(404);
-            return $this->controller->run('404');
-        }
-
         $this->prepareVars();
+
+        // map get request to :search param
+        if (!\Request::isMethod('get')) {
+            $searchTerm = \Input::get('search');
+            return Redirect::to($this->currentPageUrl([ $this->searchParam => urlencode($searchTerm)]));
+        }
 
         // load posts
         $this->posts = $this->page[ 'posts' ] = $this->listPosts();
@@ -179,7 +185,8 @@ class SearchResult extends ComponentBase
     protected function prepareVars()
     {
         $this->pageParam = $this->page[ 'pageParam' ] = $this->paramName('pageNumber');
-        $this->searchParam = $this->page[ 'searchParam' ] = Input::get('search');
+        $this->searchParam = $this->page[ 'searchParam' ] = $this->paramName('searchTerm');
+        $this->searchTerm = $this->page[ 'searchTerm' ] = urldecode($this->property('searchTerm'));
         $this->noPostsMessage = $this->page[ 'noPostsMessage' ] = $this->property('noPostsMessage');
 
         /*
@@ -199,8 +206,8 @@ class SearchResult extends ComponentBase
          * List all the posts that match search terms, eager load their categories
          */
         $posts = BlogPost::with('categories')
-            ->where('title', 'LIKE', "%{$this->searchParam}%")
-            ->orWhere('content', 'LIKE', "%{$this->searchParam}%")
+            ->where('title', 'LIKE', "%{$this->searchTerm}%")
+            ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
             ->listFrontEnd([
                 'page'       => $this->property('pageNumber'),
                 'sort'       => $this->property('sortOrder'),

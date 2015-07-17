@@ -9,6 +9,7 @@ The `searchForm` component outputs a simple search form to search your posts.
 #### Search Results
 The `searchResults` component returns all posts that match the search term from the search form.
 
+- **Search Term** - The URL parameter defining the search term.
 - **Page number** - The URL parameter defining the page number.
 - **Posts per page** - Number of posts to display per page.
 - **No Posts Message** - Message to show if no posts where found.
