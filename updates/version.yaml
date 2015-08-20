@@ -6,3 +6,6 @@
   - Map GET Request to :search url param
   - fixed broken navigation
 1.0.5: fixed wrong routing
+1.0.6:
+  - included `excerpt` into search
+  - added option to add `mark` tags (hightlight) to search terms

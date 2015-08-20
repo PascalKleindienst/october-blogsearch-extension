@@ -5,7 +5,7 @@
 <ul class="post-list">
     {% for post in posts %}
     <li>
-        <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+        <h3><a href="{{ post.url }}">{{ post.title|raw }}</a></h3>
 
         <p class="info">
             Posted
@@ -17,7 +17,7 @@
         </p>
 
         {% if post.excerpt %}
-        <p class="excerpt">{{ post.excerpt }}</p>
+        <p class="excerpt">{{ post.excerpt|raw }}</p>
         {% else %}
         <div class="content">{{ post.content_html|raw }}</div>
         {% endif %}

@@ -87,6 +87,12 @@ class SearchResult extends ComponentBase
                 'type'        => 'string',
                 'default'     => '{{ :page }}',
             ],
+            'hightlight' => [
+                'title'       => 'Hightlight Matches',
+                'type'        => 'checkbox',
+                'default'     => false,
+                'showExternalParam' => false
+            ],
             'postsPerPage' => [
                 'title'             => 'rainlab.blog::lang.settings.posts_per_page',
                 'type'              => 'string',
@@ -208,6 +214,7 @@ class SearchResult extends ComponentBase
         $posts = BlogPost::with('categories')
             ->where('title', 'LIKE', "%{$this->searchTerm}%")
             ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
+            ->orWhere('excerpt', 'LIKE', "%{$this->searchTerm}%")
             ->listFrontEnd([
                 'page'       => $this->property('pageNumber'),
                 'sort'       => $this->property('sortOrder'),
@@ -223,6 +230,21 @@ class SearchResult extends ComponentBase
             $post->categories->each(function($category) {
                 $category->setUrl($this->categoryPage, $this->controller);
             });
+
+            // apply highlight of search result
+            if ($this->property('hightlight')) {
+                $searchTerm = preg_quote($this->searchTerm, '|');
+
+                // apply highlight
+                $post->title = preg_replace('|(' . $searchTerm . ')|i', '<mark>$1</mark>', $post->title);
+                $post->excerpt = preg_replace('|(' . $searchTerm . ')|i', '<mark>$1</mark>', $post->excerpt);
+
+                $post->content_html = preg_replace(
+                    '~(?![^<>]*>)(' . $searchTerm . ')~ism',
+                    '<mark>$1</mark>',
+                    $post->content_html
+                );
+            }
         });
 
         return $posts;
