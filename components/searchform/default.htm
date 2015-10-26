@@ -1,4 +1,13 @@
 <form class="form-inline" method="GET" action="{{ __SELF__.resultPage|page }}">
     <input type="text" name="search" class="form-control">
+
+    {% if __SELF__.categoryFilter %}
+        <select name="cat[]" class="form-control">
+        {% for key,cat in __SELF__.categories %}
+            <option value="{{ key }}">{{ cat }}</option>
+        {% endfor %}
+        </select>
+    {% endif %}
+
     <button class="btn btn btn-primary" type="submit">Search</button>
 </form>
