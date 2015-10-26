@@ -9,3 +9,6 @@
 1.0.6:
   - included `excerpt` into search
   - added option to add `mark` tags (hightlight) to search terms
+1.1.0:
+  - added category filter
+  - added option to exclude categories from results
