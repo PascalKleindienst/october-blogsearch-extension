@@ -5,6 +5,7 @@ This plugin is an extension to the [RainLab.Blog](https://github.com/rainlab/blo
 The `searchForm` component outputs a simple search form to search your posts.
 
 - **Search Results Page** - Specify the page where you display the search results *(the page with the searchResult component)*
+- **Show Category Filter** - Adds a dropdown with categories to the search, so users can restrict their search to a specific categorie
 
 #### Search Results
 The `searchResults` component returns all posts that match the search term from the search form.
@@ -15,5 +16,44 @@ The `searchResults` component returns all posts that match the search term from 
 - **Posts per page** - Number of posts to display per page.
 - **No Posts Message** - Message to show if no posts where found.
 - **Sort Order** - The order in which the posts are sorted.
+- **Exclude Categories** - Specify which categories you want to exclude from your search results, so posts with them don't show up in the results.
 - **Category Page** - The page where the blog posts are filtered by a category.
 - **Post Page** - The page where single blog posts are displayed.
+
+## Documentation
+### Example Usage of Components
+```html
+title = "Search Result"
+url = "/blog/search/:search?/:page?"
+... other stuff
+
+[searchResult]
+searchTerm = "{{ :search }}"
+pageNumber = "{{ :page }}"
+hightlight = 1
+postsPerPage = 10
+noPostsMessage = "No posts found"
+sortOrder = "published_at desc"
+excludeCategories[] = 1
+excludeCategories[] = 2
+excludeCategories[] = 3
+categoryPage = "blog"
+postPage = "blog/posts"
+
+[searchForm]
+resultPage = "blog/search"
+categoryFilter = 0
+==
+<div class="container">
+    <div class="row">
+        <div class="page-header">
+            <h2>Blog Search</h2>
+        </div>
+        <div class="col-sm-8">{% component 'searchResult' %}</div>
+        <div class="col-sm-4">{% component 'searchForm' %}</div>
+    </div>
+</div>
+```
+
+### Exclude Categories
+In order to exclude more than one category you need OctoberCMS Build >= 306 which brings the new Inspector Feature
