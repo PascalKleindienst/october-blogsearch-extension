@@ -1,12 +1,12 @@
 <?php namespace PKleindienst\BlogSearch\Components;
 
-use Input;
-use Redirect;
 use Cms\Classes\ComponentBase;
 use Cms\Classes\Page;
-
-use RainLab\Blog\Models\Post as BlogPost;
+use Input;
 use RainLab\Blog\Models\Category as BlogCategory;
+use RainLab\Blog\Models\Post as BlogPost;
+use Redirect;
+use System\Models\Parameters;
 
 /**
  * Search Result component
@@ -74,6 +74,9 @@ class SearchResult extends ComponentBase
      */
     public function defineProperties()
     {
+        // check build to add fallback to not supported inspector types if needed
+        $hasNewInspector = Parameters::get('system::core.build') >= 306;
+
         return [
             'searchTerm' => [
                 'title'       => 'Search Term',
@@ -113,6 +116,11 @@ class SearchResult extends ComponentBase
                 'type'        => 'dropdown',
                 'default'     => 'published_at desc'
             ],
+            'excludeCategories' => [
+                'title'       => 'Exclude Categories',
+                'description' => 'Posts with selected categories are excluded from the search result',
+                'type'        => $hasNewInspector ? 'set' : 'dropdown'
+            ],
             'categoryPage' => [
                 'title'       => 'rainlab.blog::lang.settings.posts_category',
                 'description' => 'rainlab.blog::lang.settings.posts_category_description',
@@ -128,6 +136,14 @@ class SearchResult extends ComponentBase
                 'group'       => 'Links',
             ],
         ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getExcludeCategoriesOptions()
+    {
+        return BlogCategory::lists('name', 'id');
     }
 
     /**
@@ -166,9 +182,20 @@ class SearchResult extends ComponentBase
         $this->prepareVars();
 
         // map get request to :search param
-        $searchTerm = \Input::get('search');
+        $searchTerm = Input::get('search');
+
         if (\Request::isMethod('get') && $searchTerm) {
-            return Redirect::to($this->currentPageUrl([ $this->searchParam => urlencode($searchTerm)]));
+            // add ?cats[] query string
+            $cats = Input::get('cat');
+            $query = http_build_query(['cat' => $cats]);
+            $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
+
+            return Redirect::to(
+                $this->currentPageUrl([
+                    $this->searchParam => urlencode($searchTerm)
+                ])
+                . '?' . $query
+            );
         }
 
         // load posts
@@ -180,8 +207,9 @@ class SearchResult extends ComponentBase
         if ($pageNumberParam = $this->paramName('pageNumber')) {
             $currentPage = $this->property('pageNumber');
 
-            if ($currentPage > ($lastPage = $this->posts->lastPage()) && $currentPage > 1)
-                return Redirect::to($this->currentPageUrl([ $pageNumberParam => $lastPage ]));
+            if ($currentPage > ($lastPage = $this->posts->lastPage()) && $currentPage > 1) {
+                return Redirect::to($this->currentPageUrl([$pageNumberParam => $lastPage]));
+            }
         }
     }
 
@@ -208,18 +236,44 @@ class SearchResult extends ComponentBase
      */
     protected function listPosts()
     {
-        /*
-         * List all the posts that match search terms, eager load their categories
-         */
-        $posts = BlogPost::with('categories')
-            ->where('title', 'LIKE', "%{$this->searchTerm}%")
-            ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
-            ->orWhere('excerpt', 'LIKE', "%{$this->searchTerm}%")
-            ->listFrontEnd([
-                'page'       => $this->property('pageNumber'),
-                'sort'       => $this->property('sortOrder'),
-                'perPage'    => $this->property('postsPerPage'),
-            ]);
+        // get posts in excluded category
+        $blockedPosts = [];
+        $categories = BlogCategory::with(['posts' => function ($q) {
+            $q->select('post_id');
+        }])
+            ->whereIn('id', $this->property('excludeCategories'))
+            ->get();
+
+        $categories->each(function ($item) use (&$blockedPosts) {
+            $item->posts->each(function ($item) use (&$blockedPosts) {
+                $blockedPosts[] = $item->post_id;
+            });
+        });
+
+        // Filter posts
+        $posts = BlogPost::with(['categories' => function ($q) {
+            $q->whereNotIn('id', $this->property('excludeCategories'));
+        }])
+            ->whereNotIn('id', $blockedPosts)
+            ->where(function ($q) {
+                $q->where('title', 'LIKE', "%{$this->searchTerm}%")
+                    ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
+                    ->orWhere('excerpt', 'LIKE', "%{$this->searchTerm}%");
+            });
+
+        // filter categories
+        $cat = Input::get('cat');
+        if ($cat) {
+            $cat = is_array($cat) ? $cat : [$cat];
+            $posts->filterCategories($cat);
+        }
+
+        // List all the posts that match search terms, eager load their categories
+        $posts = $posts->listFrontEnd([
+            'page'       => $this->property('pageNumber'),
+            'sort'       => $this->property('sortOrder'),
+            'perPage'    => $this->property('postsPerPage'),
+        ]);
 
         /*
          * Add a "url" helper attribute for linking to each post and category
