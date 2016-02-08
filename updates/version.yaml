@@ -12,3 +12,6 @@
 1.1.0:
   - added category filter
   - added option to exclude categories from results
+1.1.1:
+  - remove '?' from url if query is empty
+  - added MIT License
