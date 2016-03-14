@@ -90,6 +90,14 @@ class SearchResult extends ComponentBase
                 'type'        => 'string',
                 'default'     => '{{ :page }}',
             ],
+            'disableUrlMapping' => [
+                'title'       => 'Disable URL Mapping',
+                'description' => 'If the url Mapping is disabled the search form uses the default GET Parameter q '
+                                    . '(e.g. example.com/search?search=Foo instead of example.com/search/Foo)',
+                'type'        => 'checkbox',
+                'default'     => false,
+                'showExternalParam' => false
+            ],
             'hightlight' => [
                 'title'       => 'Hightlight Matches',
                 'type'        => 'checkbox',
@@ -116,10 +124,17 @@ class SearchResult extends ComponentBase
                 'type'        => 'dropdown',
                 'default'     => 'published_at desc'
             ],
+            'includeCategories' => [
+                'title'       => 'Include Categories',
+                'description' => 'Only Posts with selected categories are included in the search result',
+                'type'        => $hasNewInspector ? 'set' : 'dropdown',
+                'group'       => 'Categories'
+            ],
             'excludeCategories' => [
                 'title'       => 'Exclude Categories',
                 'description' => 'Posts with selected categories are excluded from the search result',
-                'type'        => $hasNewInspector ? 'set' : 'dropdown'
+                'type'        => $hasNewInspector ? 'set' : 'dropdown',
+                'group'       => 'Categories'
             ],
             'categoryPage' => [
                 'title'       => 'rainlab.blog::lang.settings.posts_category',
@@ -136,6 +151,14 @@ class SearchResult extends ComponentBase
                 'group'       => 'Links',
             ],
         ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getIncludeCategoriesOptions()
+    {
+        return BlogCategory::lists('name', 'id');
     }
 
     /**
@@ -183,8 +206,7 @@ class SearchResult extends ComponentBase
 
         // map get request to :search param
         $searchTerm = Input::get('search');
-
-        if (\Request::isMethod('get') && $searchTerm) {
+        if (!$this->property('disableUrlMapping') && \Request::isMethod('get') && $searchTerm) {
             // add ?cats[] query string
             $cats = Input::get('cat');
             $query = http_build_query(['cat' => $cats]);
@@ -224,6 +246,10 @@ class SearchResult extends ComponentBase
         $this->searchTerm = $this->page[ 'searchTerm' ] = urldecode($this->property('searchTerm'));
         $this->noPostsMessage = $this->page[ 'noPostsMessage' ] = $this->property('noPostsMessage');
 
+        if ($this->property('disableUrlMapping')) {
+            $this->searchTerm = $this->page[ 'searchTerm' ] = urldecode(Input::get('search'));
+        }
+
         /*
          * Page links
          */
@@ -251,11 +277,27 @@ class SearchResult extends ComponentBase
             });
         });
 
+        // get only posts from included categories
+        $allowedPosts = [];
+        $categories = BlogCategory::with(['posts' => function ($q) {
+            $q->select('post_id');
+        }])
+            ->whereIn('id', $this->property('includeCategories'))
+            ->get();
+
+        $categories->each(function ($item) use (&$allowedPosts) {
+            $item->posts->each(function ($item) use (&$allowedPosts) {
+                $allowedPosts[] = $item->post_id;
+            });
+        });
+
         // Filter posts
         $posts = BlogPost::with(['categories' => function ($q) {
             $q->whereNotIn('id', $this->property('excludeCategories'));
+            $q->whereIn('id', $this->property('includeCategories'));
         }])
             ->whereNotIn('id', $blockedPosts)
+            ->whereIn('id', $allowedPosts)
             ->where(function ($q) {
                 $q->where('title', 'LIKE', "%{$this->searchTerm}%")
                     ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
@@ -279,10 +321,10 @@ class SearchResult extends ComponentBase
         /*
          * Add a "url" helper attribute for linking to each post and category
          */
-        $posts->each(function($post) {
+        $posts->each(function ($post) {
             $post->setUrl($this->postPage, $this->controller);
 
-            $post->categories->each(function($category) {
+            $post->categories->each(function ($category) {
                 $category->setUrl($this->categoryPage, $this->controller);
             });
 
