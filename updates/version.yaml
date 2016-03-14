@@ -15,3 +15,6 @@
 1.1.1:
   - remove '?' from url if query is empty
   - added MIT License
+1.2:
+  - added option to show only results from selected categories
+  - added option to disable url mapping (example.com/search?search=Foo instead of example.com/search/Foo)
