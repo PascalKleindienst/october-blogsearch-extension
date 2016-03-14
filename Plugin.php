@@ -1,7 +1,6 @@
 <?php namespace PKleindienst\BlogSearch;
 
 use System\Classes\PluginBase;
-use System\Classes\PluginManager;
 
 /**
  * blogSearch Plugin Information File
