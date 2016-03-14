@@ -293,8 +293,12 @@ class SearchResult extends ComponentBase
 
         // Filter posts
         $posts = BlogPost::with(['categories' => function ($q) {
-            $q->whereNotIn('id', $this->property('excludeCategories'));
-            $q->whereIn('id', $this->property('includeCategories'));
+            if (!is_null($this->property('excludeCategories'))) {
+                $q->whereNotIn('id', $this->property('excludeCategories'));
+            }
+            if (!is_null($this->property('includeCategories'))) {
+                $q->whereIn('id', $this->property('includeCategories'));
+            }
         }])
             ->whereNotIn('id', $blockedPosts)
             ->whereIn('id', $allowedPosts)
