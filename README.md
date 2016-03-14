@@ -12,10 +12,12 @@ The `searchResults` component returns all posts that match the search term from 
 
 - **Search Term** - The URL parameter defining the search term.
 - **Page number** - The URL parameter defining the page number.
+- **disableUrlMapping** - If the url Mapping is disabled the search form uses the default GET Parameter search *(e.g. `example.com/search?search=Foo` instead of `example.com/search/Foo`)*
 - **Hightlight Matches** - Wrap the search terms found in the posts with `<mark>`-Tags or not 
 - **Posts per page** - Number of posts to display per page.
 - **No Posts Message** - Message to show if no posts where found.
 - **Sort Order** - The order in which the posts are sorted.
+- **Include Categories** - 'Only Posts with selected categories are included in the search result
 - **Exclude Categories** - Specify which categories you want to exclude from your search results, so posts with them don't show up in the results.
 - **Category Page** - The page where the blog posts are filtered by a category.
 - **Post Page** - The page where single blog posts are displayed.
@@ -55,5 +57,5 @@ categoryFilter = 0
 </div>
 ```
 
-### Exclude Categories
-In order to exclude more than one category you need OctoberCMS Build >= 306 which brings the new Inspector Feature
+### Exclude/Include Categories
+In order to exclude/include more than one category you need OctoberCMS Build >= 306 which brings the new Inspector Feature
