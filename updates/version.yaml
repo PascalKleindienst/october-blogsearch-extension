@@ -19,3 +19,4 @@
   - added option to show only results from selected categories
   - added option to disable url mapping (example.com/search?search=Foo instead of example.com/search/Foo)
 1.2.1: fixed bug with missing categories
+1.2.2: optimized query for included/excluded categories
