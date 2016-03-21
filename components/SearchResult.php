@@ -263,45 +263,17 @@ class SearchResult extends ComponentBase
      */
     protected function listPosts()
     {
-        // get posts in excluded category
-        $blockedPosts = [];
-        $categories = BlogCategory::with(['posts' => function ($q) {
-            $q->select('post_id');
-        }])
-            ->whereIn('id', $this->property('excludeCategories'))
-            ->get();
-
-        $categories->each(function ($item) use (&$blockedPosts) {
-            $item->posts->each(function ($item) use (&$blockedPosts) {
-                $blockedPosts[] = $item->post_id;
-            });
-        });
-
-        // get only posts from included categories
-        $allowedPosts = [];
-        $categories = BlogCategory::with(['posts' => function ($q) {
-            $q->select('post_id');
-        }])
-            ->whereIn('id', $this->property('includeCategories'))
-            ->get();
-
-        $categories->each(function ($item) use (&$allowedPosts) {
-            $item->posts->each(function ($item) use (&$allowedPosts) {
-                $allowedPosts[] = $item->post_id;
-            });
-        });
-
         // Filter posts
-        $posts = BlogPost::with(['categories' => function ($q) {
-            if (!is_null($this->property('excludeCategories'))) {
-                $q->whereNotIn('id', $this->property('excludeCategories'));
+        $posts = BlogPost::with([
+            'categories' => function ($q) {
+                if (!is_null($this->property('excludeCategories'))) {
+                    $q->whereNotIn('id', $this->property('excludeCategories'));
+                }
+                if (!is_null($this->property('includeCategories'))) {
+                    $q->whereIn('id', $this->property('includeCategories'));
+                }
             }
-            if (!is_null($this->property('includeCategories'))) {
-                $q->whereIn('id', $this->property('includeCategories'));
-            }
-        }])
-            ->whereNotIn('id', $blockedPosts)
-            ->whereIn('id', $allowedPosts)
+        ])
             ->where(function ($q) {
                 $q->where('title', 'LIKE', "%{$this->searchTerm}%")
                     ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
@@ -315,11 +287,23 @@ class SearchResult extends ComponentBase
             $posts->filterCategories($cat);
         }
 
+        // get posts in excluded category
+        $blockedPosts = $this->getPostIdsByCategories($this->property('excludeCategories'));
+        if (!empty($blockedPosts)) {
+            $posts = $posts->whereNotIn('id', $blockedPosts);
+        }
+
+        // get only posts from included categories
+        $allowedPosts = $this->getPostIdsByCategories($this->property('includeCategories'));
+        if (!empty($allowedPosts)) {
+            $posts = $posts->whereIn('id', $allowedPosts);
+        }
+
         // List all the posts that match search terms, eager load their categories
         $posts = $posts->listFrontEnd([
-            'page'       => $this->property('pageNumber'),
-            'sort'       => $this->property('sortOrder'),
-            'perPage'    => $this->property('postsPerPage'),
+            'page'    => $this->property('pageNumber'),
+            'sort'    => $this->property('sortOrder'),
+            'perPage' => $this->property('postsPerPage'),
         ]);
 
         /*
@@ -333,21 +317,56 @@ class SearchResult extends ComponentBase
             });
 
             // apply highlight of search result
-            if ($this->property('hightlight')) {
-                $searchTerm = preg_quote($this->searchTerm, '|');
-
-                // apply highlight
-                $post->title = preg_replace('|(' . $searchTerm . ')|i', '<mark>$1</mark>', $post->title);
-                $post->excerpt = preg_replace('|(' . $searchTerm . ')|i', '<mark>$1</mark>', $post->excerpt);
-
-                $post->content_html = preg_replace(
-                    '~(?![^<>]*>)(' . $searchTerm . ')~ism',
-                    '<mark>$1</mark>',
-                    $post->content_html
-                );
-            }
+            $this->highlight($post);
         });
 
         return $posts;
+    }
+
+    /**
+     * Get the posts ids of posts with belong to specific categories
+     * @param mixed $ids
+     * @return array
+     */
+    protected function getPostIdsByCategories($ids = null)
+    {
+        if (is_null($ids) || !is_array($ids)) {
+            return [];
+        }
+
+        $posts = [];
+        $categories = BlogCategory::with(['posts' => function ($q) {
+            $q->select('post_id');
+        }])
+            ->whereIn('id', $ids)
+            ->get();
+
+        $categories->each(function ($item) use (&$posts) {
+            $item->posts->each(function ($item) use (&$posts) {
+                $posts[] = $item->post_id;
+            });
+        });
+
+        return $posts;
+    }
+
+    /**
+     * @param \RainLab\Blog\Models\Post $post
+     */
+    protected function highlight(BlogPost $post)
+    {
+        if ($this->property('hightlight')) {
+            $searchTerm = preg_quote($this->searchTerm, '|');
+
+            // apply highlight
+            $post->title = preg_replace('|(' . $searchTerm . ')|i', '<mark>$1</mark>', $post->title);
+            $post->excerpt = preg_replace('|(' . $searchTerm . ')|i', '<mark>$1</mark>', $post->excerpt);
+
+            $post->content_html = preg_replace(
+                '~(?![^<>]*>)(' . $searchTerm . ')~ism',
+                '<mark>$1</mark>',
+                $post->content_html
+            );
+        }
     }
 }
