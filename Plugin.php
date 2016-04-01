@@ -37,4 +37,23 @@ class Plugin extends PluginBase
             'PKleindienst\BlogSearch\Components\SearchResult' => 'searchResult',
         ];
     }
+
+    /**
+     * Register new Twig variables
+     * @return array
+     */
+    public function registerMarkupTags()
+    {
+        // Check the translate plugin is installed
+        if (class_exists('RainLab\Translate\Behaviors\TranslatableModel')) {
+            return [];
+        }
+
+        return [
+            'filters' => [
+                '_'  => ['Lang', 'get'],
+                '__' => ['Lang', 'choice'],
+            ]
+        ];
+    }
 }
