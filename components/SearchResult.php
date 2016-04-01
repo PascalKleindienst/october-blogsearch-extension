@@ -76,6 +76,7 @@ class SearchResult extends ComponentBase
     {
         // check build to add fallback to not supported inspector types if needed
         $hasNewInspector = Parameters::get('system::core.build') >= 306;
+        $categoryItems = BlogCategory::lists('name', 'id');
 
         return [
             'searchTerm' => [
@@ -128,12 +129,14 @@ class SearchResult extends ComponentBase
                 'title'       => 'Include Categories',
                 'description' => 'Only Posts with selected categories are included in the search result',
                 'type'        => $hasNewInspector ? 'set' : 'dropdown',
+                'items'       => $categoryItems,
                 'group'       => 'Categories'
             ],
             'excludeCategories' => [
                 'title'       => 'Exclude Categories',
                 'description' => 'Posts with selected categories are excluded from the search result',
                 'type'        => $hasNewInspector ? 'set' : 'dropdown',
+                'items'       => $categoryItems,
                 'group'       => 'Categories'
             ],
             'categoryPage' => [
