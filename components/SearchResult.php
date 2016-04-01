@@ -362,11 +362,11 @@ class SearchResult extends ComponentBase
             $searchTerm = preg_quote($this->searchTerm, '|');
 
             // apply highlight
-            $post->title = preg_replace('|(' . $searchTerm . ')|i', '<mark>$1</mark>', $post->title);
-            $post->excerpt = preg_replace('|(' . $searchTerm . ')|i', '<mark>$1</mark>', $post->excerpt);
+            $post->title = preg_replace('|(' . $searchTerm . ')|iu', '<mark>$1</mark>', $post->title);
+            $post->excerpt = preg_replace('|(' . $searchTerm . ')|iu', '<mark>$1</mark>', $post->excerpt);
 
             $post->content_html = preg_replace(
-                '~(?![^<>]*>)(' . $searchTerm . ')~ism',
+                '~(?![^<>]*>)(' . $searchTerm . ')~ismu',
                 '<mark>$1</mark>',
                 $post->content_html
             );
