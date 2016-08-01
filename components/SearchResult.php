@@ -6,7 +6,7 @@ use Input;
 use RainLab\Blog\Models\Category as BlogCategory;
 use RainLab\Blog\Models\Post as BlogPost;
 use Redirect;
-use System\Models\Parameters;
+// use System\Models\Parameters;
 
 /**
  * Search Result component
@@ -75,7 +75,7 @@ class SearchResult extends ComponentBase
     public function defineProperties()
     {
         // check build to add fallback to not supported inspector types if needed
-        $hasNewInspector = Parameters::get('system::core.build') >= 306;
+        // $hasNewInspector = Parameters::get('system::core.build') >= 306;
         $categoryItems = BlogCategory::lists('name', 'id');
 
         return [
@@ -128,14 +128,16 @@ class SearchResult extends ComponentBase
             'includeCategories' => [
                 'title'       => 'Include Categories',
                 'description' => 'Only Posts with selected categories are included in the search result',
-                'type'        => $hasNewInspector ? 'set' : 'dropdown',
+                // 'type'        => $hasNewInspector ? 'set' : 'dropdown',
+                'type'        => 'set',
                 'items'       => $categoryItems,
                 'group'       => 'Categories'
             ],
             'excludeCategories' => [
                 'title'       => 'Exclude Categories',
                 'description' => 'Posts with selected categories are excluded from the search result',
-                'type'        => $hasNewInspector ? 'set' : 'dropdown',
+                // 'type'        => $hasNewInspector ? 'set' : 'dropdown',
+                'type'        => 'set',
                 'items'       => $categoryItems,
                 'group'       => 'Categories'
             ],
