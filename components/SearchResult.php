@@ -269,16 +269,14 @@ class SearchResult extends ComponentBase
     protected function listPosts()
     {
         // Filter posts
-        $posts = BlogPost::with([
-            'categories' => function ($q) {
+        $posts = BlogPost::whereHas('categories', function ($q) {
                 if (!is_null($this->property('excludeCategories'))) {
                     $q->whereNotIn('id', $this->property('excludeCategories'));
                 }
                 if (!is_null($this->property('includeCategories'))) {
                     $q->whereIn('id', $this->property('includeCategories'));
                 }
-            }
-        ])
+            })
             ->where(function ($q) {
                 $q->where('title', 'LIKE', "%{$this->searchTerm}%")
                     ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
@@ -290,18 +288,6 @@ class SearchResult extends ComponentBase
         if ($cat) {
             $cat = is_array($cat) ? $cat : [$cat];
             $posts->filterCategories($cat);
-        }
-
-        // get posts in excluded category
-        $blockedPosts = $this->getPostIdsByCategories($this->property('excludeCategories'));
-        if (!empty($blockedPosts)) {
-            $posts = $posts->whereNotIn('id', $blockedPosts);
-        }
-
-        // get only posts from included categories
-        $allowedPosts = $this->getPostIdsByCategories($this->property('includeCategories'));
-        if (!empty($allowedPosts)) {
-            $posts = $posts->whereIn('id', $allowedPosts);
         }
 
         // List all the posts that match search terms, eager load their categories
