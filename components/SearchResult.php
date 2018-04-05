@@ -269,19 +269,23 @@ class SearchResult extends ComponentBase
     protected function listPosts()
     {
         // Filter posts
-        $posts = BlogPost::whereHas('categories', function ($q) {
-                if (!is_null($this->property('excludeCategories'))) {
-                    $q->whereNotIn('id', $this->property('excludeCategories'));
-                }
-                if (!is_null($this->property('includeCategories'))) {
-                    $q->whereIn('id', $this->property('includeCategories'));
-                }
-            })
-            ->where(function ($q) {
-                $q->where('title', 'LIKE', "%{$this->searchTerm}%")
-                    ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
-                    ->orWhere('excerpt', 'LIKE', "%{$this->searchTerm}%");
+        $posts = BlogPost::where(function ($q) {
+            $q->where('title', 'LIKE', "%{$this->searchTerm}%")
+                ->orWhere('content', 'LIKE', "%{$this->searchTerm}%")
+                ->orWhere('excerpt', 'LIKE', "%{$this->searchTerm}%");
+        });
+        
+        if (!is_null($this->property('includeCategories'))) {
+            $posts = $posts->whereHas('categories', function ($q) {
+                $q->whereIn('id', $this->property('includeCategories'));
             });
+        }
+
+        if (!is_null($this->property('excludeCategories'))) {
+            $posts = $posts->whereDoesntHave('categories', function ($q) {
+                $q->whereIn('id', $this->property('excludeCategories'));
+            });
+        }
 
         // filter categories
         $cat = Input::get('cat');
@@ -309,33 +313,6 @@ class SearchResult extends ComponentBase
 
             // apply highlight of search result
             $this->highlight($post);
-        });
-
-        return $posts;
-    }
-
-    /**
-     * Get the posts ids of posts with belong to specific categories
-     * @param mixed $ids
-     * @return array
-     */
-    protected function getPostIdsByCategories($ids = null)
-    {
-        if (is_null($ids) || !is_array($ids)) {
-            return [];
-        }
-
-        $posts = [];
-        $categories = BlogCategory::with(['posts' => function ($q) {
-            $q->select('post_id');
-        }])
-            ->whereIn('id', $ids)
-            ->get();
-
-        $categories->each(function ($item) use (&$posts) {
-            $item->posts->each(function ($item) use (&$posts) {
-                $posts[] = $item->post_id;
-            });
         });
 
         return $posts;
