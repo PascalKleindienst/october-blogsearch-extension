@@ -25,3 +25,7 @@
   - added support for Translate Plugin
   - merged highlight bug fix for Cyrillic Symbols by thewizardplusplus
 1.3.0: !!! Removed support for old Inspector Features prior to October 306
+1.4.0:
+  - "Add homepage to plugin details #16 by @gergo85"
+  - "Fixed pagination reference for non-default component names #17 by @bnordland"
+  - "Fixed an issue with post filtering when a category is to be "included" that doesn't have any blog posts yet #18 by @Harti"
