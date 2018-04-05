@@ -27,4 +27,4 @@
     {% endfor %}
 </ul>
 
-{% partial 'searchResult::pagination' posts=posts %}
+{% partial __SELF__~"::pagination" posts=posts %}
