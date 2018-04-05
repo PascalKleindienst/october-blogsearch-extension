@@ -10,7 +10,7 @@ class Plugin extends PluginBase
     /**
      * @var array Plugin dependencies
      */
-    public $require = [ 'RainLab.Blog' ];
+    public $require = ['RainLab.Blog'];
 
     /**
      * Returns information about this plugin.
@@ -23,7 +23,8 @@ class Plugin extends PluginBase
             'name'        => 'Blog Search',
             'description' => 'Adds a search function to the blog',
             'author'      => 'Pascal Kleindienst',
-            'icon'        => 'icon-search'
+            'icon'        => 'icon-search',
+            'homepage'    => 'https://github.com/PascalKleindienst/october-blogsearch-extension'
         ];
     }
 
@@ -33,8 +34,8 @@ class Plugin extends PluginBase
     public function registerComponents()
     {
         return [
-            'PKleindienst\BlogSearch\Components\SearchForm' => 'searchForm',
-            'PKleindienst\BlogSearch\Components\SearchResult' => 'searchResult',
+            'PKleindienst\BlogSearch\Components\SearchForm'   => 'searchForm',
+            'PKleindienst\BlogSearch\Components\SearchResult' => 'searchResult'
         ];
     }
 
@@ -52,7 +53,7 @@ class Plugin extends PluginBase
         return [
             'filters' => [
                 '_'  => ['Lang', 'get'],
-                '__' => ['Lang', 'choice'],
+                '__' => ['Lang', 'choice']
             ]
         ];
     }
