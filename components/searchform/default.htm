@@ -1,13 +1,34 @@
-<form class="form-inline" method="GET" action="{{ __SELF__.resultPage|page }}">
-    <input type="text" name="search" class="form-control">
+                <form method="GET" action="{{ __SELF__.resultPage|page }}">
+                
+                    <div class="field has-addons has-addons-right bm-2_5">
+                        <div class="control">
+                            <input class="input" type="text" name="search" placeholder="{{ 'Suchen'|_ }}">
+                        </div>
+                        <div class="control">
+                            <p>
+                                <a class="button is-span" type="submit" onclick="submitForm()">
+                                    <span class="icon is-small is-right">
+                                        <i class="fas fa-search">
+                                            <button class="button is-link is-outlined button-white bm-2_5" style="display: none;" type="submit" id="submit-button"></button>
+                                        </i>
+                                    </span>
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                
+                    <script>
+                        function submitForm() {
+                            var elem = document.getElementById("submit-button");
+                            elem.click();
+                        }
+                    </script> {% if __SELF__.categoryFilter %}
+                    <select name="cat[]" class="form-control">
+                        {% for key,cat in __SELF__.categories %}
+                        <option value="{{ key }}">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                
+                </form>
 
-    {% if __SELF__.categoryFilter %}
-        <select name="cat[]" class="form-control">
-        {% for key,cat in __SELF__.categories %}
-            <option value="{{ key }}">{{ cat }}</option>
-        {% endfor %}
-        </select>
-    {% endif %}
-
-    <button class="btn btn btn-primary" type="submit">{{ 'Search'|_ }}</button>
-</form>
